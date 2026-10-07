@@ -36,6 +36,8 @@ def few_shot_lines() -> set[str]:
 
 
 def validate(cases: list[dict]) -> list[str]:
+    if not cases:
+        return ["dataset is empty (0 cases)"]
     errors = []
     seen_ids, seen_lines = set(), set()
     leaked = few_shot_lines()
