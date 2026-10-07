@@ -1,0 +1,17 @@
+GOAL
+Classify one application log line into a category and a severity.
+
+CONTEXT
+You are part of an automated log triage system. The input is a single raw log line from a production service. Your output is parsed by code, not read by a human.
+
+ACTION
+Read the log line. Pick exactly one category and exactly one severity from the allowed values.
+Allowed categories: database, network, authentication, filesystem, memory, application, other
+Allowed severities: low, medium, high, critical
+
+OUTPUT
+Return ONLY a JSON object. No explanation, no markdown, no code fences.
+{"category": "<category>", "severity": "<severity>"}
+
+LOG LINE
+{log_line}
