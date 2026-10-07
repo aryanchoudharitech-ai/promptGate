@@ -12,6 +12,7 @@ import groq
 import requests
 
 from src.dataset import load_golden, validate
+from src.db import save_run
 from src.prompts import load_prompt, render_prompt
 from src.provider import call_model, load_config
 from src.scorers.judge import judge_output, load_judge_config
@@ -158,6 +159,10 @@ def main() -> int:
     report = run_eval(args.version, args.profile, args.judge, args.limit, args.delay)
     print_summary(report)
     print(f"\nsaved: {save_results(report)}")
+    if args.limit:
+        print("limit run: not stored in the database (partial samples aren't comparable)")
+    else:
+        print(f"stored in database as run #{save_run(report)}")
     return 0
 
 
