@@ -13,7 +13,7 @@ from pathlib import Path
 from src.dataset import GOLDEN_PATH
 from src.db import get_case_results, last_good_run
 from src.provider import load_config
-from src.run_eval import print_summary, run_eval
+from src.run_eval import print_summary, run_eval, save_results
 
 BASELINE_PATH = Path(__file__).resolve().parent.parent / "data" / "baseline.json"
 DEFAULT_THRESHOLD = 5.0  # percentage POINTS, not relative percent
@@ -93,6 +93,7 @@ def check(version: str, threshold: float, delay: float, baseline_path: Path) -> 
         print(f"=== attempt {attempt} of 2 ===")
         report = run_eval(version, delay=delay)
         print_summary(report)
+        print(f"saved: {save_results(report)}")
         diff = compare(baseline, report)
         describe(diff)
         if diff["change_points"] >= -threshold:

@@ -34,6 +34,7 @@ def run_gate(monkeypatch, tmp_path):
     """Run gate.check against a fake model. Returns (exit_code, number_of_eval_runs)."""
     monkeypatch.setattr(gate, "load_config", lambda profile: {"model": "test-model"})
     monkeypatch.setattr(gate, "print_summary", lambda report: None)
+    monkeypatch.setattr(gate, "save_results", lambda report: "results/fake.json")
 
     def _run(baseline_passed, *attempt_passed, threshold=5.0):
         baseline_path = write_baseline(tmp_path / "baseline.json", passed=baseline_passed)
