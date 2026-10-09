@@ -1,9 +1,7 @@
 name: prompt-eval-gate
 
 on:
-  pull_request:
-    paths:
-      - "prompts/v*.txt" # only prompt versions; judge_*.txt is advisory and doesn't trigger CI
+  pull_request: # no paths filter: the check must report on every PR so it can be required
   workflow_dispatch: # manual run from the Actions tab
     inputs:
       version:
@@ -22,15 +20,15 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     env:
-      PYTHONUNBUFFERED: "1" # stream progress lines live instead of at the end
+      PYTHONUNBUFFERED: "1" # stream progress lines live
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
-          fetch-depth: 0 # full history, so we can diff against the PR base
+          fetch-depth: 0
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
-          python-version: "3.14" # matches your laptop. If this step fails, use "3.12"
+          python-version: "3.14"
           cache: pip
           cache-dependency-path: requirements.lock
 
@@ -55,17 +53,26 @@ jobs:
             versions=$(for f in $files; do basename "$f" .txt; done | tr '\n' ' ')
           fi
           echo "versions=$versions" >> "$GITHUB_OUTPUT"
-          echo "Gating: $versions"
+          echo "Gating: ${versions:-nothing (no prompt version changed)}"
 
-      - name: Regression gate
+      - name: Regression gate (paid, only when a prompt version changed)
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }} # only this step can see the key
           VERSIONS: ${{ steps.pick.outputs.versions }}
         run: |
           if [ -z "$VERSIONS" ]; then
-            echo "No prompt versions to gate, nothing to do"
+            echo "No prompt versions changed, skipping the paid gate"
             exit 0
           fi
           for v in $VERSIONS; do
             python -m src.gate check "$v"
           done
+
+      - name: Upload eval results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: eval-results
+          path: results/*.json
+          if-no-files-found: ignore
+          retention-days: 30
